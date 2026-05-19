@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from datetime import datetime
 
 from todoist_api_python.api import TodoistAPI
 
@@ -22,9 +23,11 @@ async def _resolve_project_id(name_or_id: str) -> str | None:
 
 
 async def create_task(parsed: ParsedTask, project_id: str | None = None) -> dict:
+    due_dt = datetime.fromisoformat(parsed.due_date)
+
     kwargs: dict = {
         "content": parsed.title,
-        "due_datetime": parsed.due_date,
+        "due_datetime": due_dt,
         "priority": parsed.priority,
     }
     if parsed.duration:
