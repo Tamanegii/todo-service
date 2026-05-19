@@ -16,9 +16,9 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 logger = logging.getLogger(__name__)
 
 
-async def _process_aggregated(session_id: str, text: str) -> None:
+async def _process_aggregated(session_id: str, text: str, project_id: str | None = None) -> None:
     parsed = await parse_task(text)
-    result = await create_task(parsed)
+    result = await create_task(parsed, project_id=project_id)
     logger.info("Task created for session %s: %s", session_id, result)
 
 
@@ -95,5 +95,5 @@ async def receive_message(
         from fastapi import HTTPException, status
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
-    await aggregator.add_message(req.session_id, req.text)
+    await aggregator.add_message(req.session_id, req.text, project_id=req.project_id)
     return TaskResponse()

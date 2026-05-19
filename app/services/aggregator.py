@@ -11,21 +11,24 @@ logger = logging.getLogger(__name__)
 @dataclass
 class _SessionBuffer:
     messages: list[str] = field(default_factory=list)
+    project_id: str | None = None
     timer: asyncio.Task | None = None
 
 
 class MessageAggregator:
-    def __init__(self, on_complete: Callable[[str, str], Awaitable[None]]):
+    def __init__(self, on_complete: Callable[[str, str, str | None], Awaitable[None]]):
         self._sessions: dict[str, _SessionBuffer] = {}
         self._window = settings.aggregation_window_seconds
         self._on_complete = on_complete
 
-    async def add_message(self, session_id: str, text: str) -> None:
+    async def add_message(self, session_id: str, text: str, project_id: str | None = None) -> None:
         if session_id not in self._sessions:
             self._sessions[session_id] = _SessionBuffer()
 
         buf = self._sessions[session_id]
         buf.messages.append(text)
+        if project_id:
+            buf.project_id = project_id
 
         if buf.timer and not buf.timer.done():
             buf.timer.cancel()
@@ -40,6 +43,6 @@ class MessageAggregator:
         aggregated = "\n".join(buf.messages)
         logger.info("Session %s aggregated: %s", session_id, aggregated)
         try:
-            await self._on_complete(session_id, aggregated)
+            await self._on_complete(session_id, aggregated, buf.project_id)
         except Exception:
             logger.exception("Failed to process aggregated message for session %s", session_id)

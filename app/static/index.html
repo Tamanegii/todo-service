@@ -31,6 +31,23 @@
             display: flex;
             gap: 0.5rem;
         }
+        .project-row {
+            margin-bottom: 0.75rem;
+        }
+        .project-row input {
+            width: 100%;
+            padding: 0.5rem 1rem;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: #16213e;
+            color: #eee;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+        .project-row input:focus {
+            outline: none;
+            border-color: #4a6fa5;
+        }
         textarea {
             flex: 1;
             padding: 0.75rem 1rem;
@@ -67,6 +84,9 @@
 <body>
     <div class="container">
         <h1>Quick Todo</h1>
+        <div class="project-row">
+            <input id="project" type="text" placeholder="项目名称（选填，不填则进收件箱）">
+        </div>
         <div class="input-area">
             <textarea id="input" placeholder="明天下午3点 开会 重要 1小时" rows="1"></textarea>
             <button id="send">发送</button>
@@ -75,6 +95,7 @@
     </div>
     <script>
         const input = document.getElementById('input');
+        const project = document.getElementById('project');
         const btn = document.getElementById('send');
         const toast = document.getElementById('toast');
 
@@ -95,7 +116,7 @@
                 const res = await fetch('/api/v1/messages', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text, session_id: 'web' })
+                    body: JSON.stringify({ text, session_id: 'web', project_id: project.value.trim() || null })
                 });
                 if (res.status === 401) {
                     toast.textContent = '认证失败，请登录';

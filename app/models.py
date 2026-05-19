@@ -6,6 +6,7 @@ from pydantic import BaseModel
 class MessageRequest(BaseModel):
     text: str
     session_id: str = "default"
+    project_id: str | None = None
 
 
 class ParsedTask(BaseModel):
